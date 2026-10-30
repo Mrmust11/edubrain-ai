@@ -34,3 +34,7 @@
    ```bash
    git clone [https://github.com/YOUR_USERNAME/edubrain-ai.git](https://github.com/YOUR_USERNAME/edubrain-ai.git)
    cd edubrain-ai
+
+   pip install -r requirements.txt
+
+   streamlit run app.py
