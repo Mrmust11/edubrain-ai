@@ -3,29 +3,33 @@ import google.generativeai as genai
 from pypdf import PdfReader
 
 st.set_page_config(page_title="EduBrain AI", layout="wide", page_icon="🎓")
-
 st.title("🎓 EduBrain AI: Academic Assistant & Quiz Engine")
 
-
-api_key = st.sidebar.text_input("Enter Google Gemini API Key", type="password")
+api_key = st.secrets.get("GEMINI_API_KEY") or st.sidebar.text_input("Enter Gemini API Key", type="password")
 
 if api_key:
     genai.configure(api_key=api_key)
-    model = genai.GenerativeModel('gemini-1.5-flash-latest')
 
-    
+    try:
+        working_models = [
+            m.name for m in genai.list_models() 
+            if 'generateContent' in m.supported_generation_methods
+        ]
+        selected_model = next((m for m in working_models if 'gemini-1.5-flash' in m), working_models[0])
+        model = genai.GenerativeModel(selected_model)
+    except Exception as e:
+        st.error(f"Error loading models: {e}")
+        st.stop()
+
     uploaded_file = st.file_uploader("Upload Academic PDF Document", type=["pdf"])
 
     if uploaded_file is not None:
         reader = PdfReader(uploaded_file)
-        text = ""
-        for page in reader.pages:
-            text += page.extract_text() or ""
+        text = "".join([page.extract_text() or "" for page in reader.pages])
 
         st.success(f"PDF Uploaded Successfully! Total pages: {len(reader.pages)}")
 
-        # main Tabs
-        tab1, tab2, tab3 = st.tabs(["Summary & Concepts", "Interactive Quiz", "Q&A Chat"])
+        tab1, tab2, tab3 = st.tabs(["📝 Summary & Concepts", "🧩 Interactive Quiz", "💬 Q&A Chat"])
 
         with tab1:
             if st.button("Generate Summary"):
@@ -48,6 +52,5 @@ if api_key:
                     prompt = f"Answer this question based strictly on the text provided.\nQuestion: {user_question}\n\nText:\n{text[:10000]}"
                     response = model.generate_content(prompt)
                     st.write(response.text)
-
 else:
-    st.warning("Please enter your Gemini API Key in the sidebar to get started.")
+    st.warning("Please enter your Gemini API Key to continue.")
