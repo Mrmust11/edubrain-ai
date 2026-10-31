@@ -38,3 +38,6 @@
    pip install -r requirements.txt
 
    streamlit run app.py
+
+## Streamli Direct Link
+https://edubrain-ai-g3zkd2obcufxvnvpdnfdph.streamlit.app/
